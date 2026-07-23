@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Duc Dung - Store Hack</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- ===== PAGES ===== -->
+    <div id="app">
+        <!-- BUY PAGE -->
+        <div id="buyPage" class="page active">
+            <div class="product-list" id="productList">
+                <div class="loading-state">⏳ Đang tải sản phẩm...</div>
+            </div>
+        </div>
+
+        <!-- RECHARGE PAGE -->
+        <div id="rechargePage" class="page" style="display:none">
+            <div class="recharge-screen">
+                <h2>💰 Nạp tiền</h2>
+                <p class="recharge-desc">Chọn số tiền muốn nạp:</p>
+                <div class="recharge-amounts">
+                    <button onclick="recharge(20000)">20.000đ</button>
+                    <button onclick="recharge(50000)">50.000đ</button>
+                    <button onclick="recharge(100000)">100.000đ</button>
+                    <button onclick="recharge(200000)">200.000đ</button>
+                    <button onclick="recharge(500000)">500.000đ</button>
+                    <button onclick="recharge(1000000)">1.000.000đ</button>
+                </div>
+                <div class="recharge-custom">
+                    <input type="number" id="customAmount" placeholder="Nhập số tiền khác">
+                    <button onclick="rechargeCustom()">Nạp</button>
+                </div>
+                <div id="rechargeResult"></div>
+            </div>
+        </div>
+
+        <!-- TOP PAGE -->
+        <div id="topPage" class="page" style="display:none">
+            <div class="top-screen">
+                <div class="top-header">
+                    <h2>🏆 Bảng Xếp Hạng</h2>
+                    <p>Top người dùng nạp nhiều nhất</p>
+                </div>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="loadTop('month')">THÁNG NÀY</button>
+                    <button class="filter-tab" onclick="loadTop('week')">TUẦN NÀY</button>
+                    <button class="filter-tab" onclick="loadTop('all')">TẤT CẢ</button>
+                </div>
+                <div class="top-list" id="topList">
+                    <div class="loading-state">⏳ Đang tải...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROFILE PAGE -->
+        <div id="profilePage" class="page" style="display:none">
+            <div class="profile-screen">
+                <div class="user-header">
+                    <div class="avatar" id="avatar">Đ</div>
+                    <div class="user-info">
+                        <div class="username" id="profileUsername">Loading...</div>
+                        <div class="user-id" id="profileUserId">ID: ...</div>
+                    </div>
+                    <div class="balance-usdt">
+                        <span id="profileBalance">0</span>đ
+                        <span class="badge" id="profileRole">CUSTOMER</span>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalBought">0</div>
+                        <div class="stat-label">SP ĐÃ MUA</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalSpent">0đ</div>
+                        <div class="stat-label">TỔNG CHI</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalRecharge">0đ</div>
+                        <div class="stat-label">TỔNG NẠP</div>
+                    </div>
+                </div>
+
+                <div class="referral-section">
+                    <div class="section-title">🔥 HỆ THỐNG GIỚI THIỆU (REF)</div>
+                    <p class="referral-desc">
+                        Nhận ngay <strong id="commissionRate">10%</strong> hoa hồng khi người được bạn mới nạp tiền thành công.
+                    </p>
+                    <div class="referral-link-box">
+                        <input type="text" id="refLink" readonly>
+                        <button onclick="copyRefLink()">📋 COPY LINK</button>
+                    </div>
+                    <div class="commission-box">
+                        <span>Tiền Hoa Hồng Đã Nhận:</span>
+                        <span class="commission-amount" id="commissionEarned">0đ</span>
+                    </div>
+                </div>
+
+                <div class="history-section">
+                    <div class="section-title">📦 LỊCH SỬ MUA HÀNG</div>
+                    <div id="purchaseHistory">
+                        <div class="empty-state">Chưa có SP nào.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== BOTTOM NAV ===== -->
+    <div class="bottom-nav">
+        <button class="nav-btn active" onclick="showPage('buy')">
+            <span class="nav-icon">🛒</span>
+            <span class="nav-label">MUA KEY</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('recharge')">
+            <span class="nav-icon">💰</span>
+            <span class="nav-label">NAP TIỀN</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('top')">
+            <span class="nav-icon">🏆</span>
+            <span class="nav-label">TOP NẠP</span>
+        </button>
+        <button class="nav-btn" onclick="showPage('profile')">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label">CÁ NHÂN</span>
+        </button>
+    </div>
+
+    <script src="js/telegram.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
