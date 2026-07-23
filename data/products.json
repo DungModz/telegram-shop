@@ -1,0 +1,22 @@
+[
+  {
+    "id": "P_001",
+    "name": "Migul Basic - Vietnam",
+    "package": "1 Ngày",
+    "price": 70000,
+    "reseller_price": 49000,
+    "stock": 10,
+    "created_by": "7305897951",
+    "created_at": "2026-07-23T10:00:00"
+  },
+  {
+    "id": "P_002",
+    "name": "Migul Pro - Vietnam",
+    "package": "7 Ngày",
+    "price": 215000,
+    "reseller_price": 150500,
+    "stock": 5,
+    "created_by": "7305897951",
+    "created_at": "2026-07-23T10:00:00"
+  }
+]
