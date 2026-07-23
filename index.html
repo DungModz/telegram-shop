@@ -3,21 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Duc Dung - Store Hack</title>
+    <title>Shop Duc Dung - Auto 24/7</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- ===== PAGES ===== -->
     <div id="app">
-        <!-- BUY PAGE -->
+        <!-- ===== HEADER ===== -->
+        <div class="app-header">
+            <div class="brand">
+                <div class="brand-icon">🛒</div>
+                <div class="brand-text">Shop Duc Dung</div>
+            </div>
+            <span class="badge-online">● 24/7</span>
+        </div>
+
+        <!-- ===== BUY PAGE ===== -->
         <div id="buyPage" class="page active">
+            <div class="user-header">
+                <div class="avatar" id="buyAvatar">Đ</div>
+                <div class="user-info">
+                    <div class="username" id="buyUsername">Loading...</div>
+                    <div class="user-id" id="buyUserId">ID: ...</div>
+                </div>
+                <div class="balance-usdt">
+                    <span id="buyBalance">0</span>đ
+                    <span class="badge-role" id="buyRole">CUSTOMER</span>
+                </div>
+            </div>
             <div class="product-list" id="productList">
-                <div class="loading-state">⏳ Đang tải sản phẩm...</div>
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>⏳ Đang tải sản phẩm...</p>
+                </div>
             </div>
         </div>
 
-        <!-- RECHARGE PAGE -->
+        <!-- ===== RECHARGE PAGE ===== -->
         <div id="rechargePage" class="page" style="display:none">
             <div class="recharge-screen">
                 <h2>💰 Nạp tiền</h2>
@@ -38,7 +60,7 @@
             </div>
         </div>
 
-        <!-- TOP PAGE -->
+        <!-- ===== TOP PAGE ===== -->
         <div id="topPage" class="page" style="display:none">
             <div class="top-screen">
                 <div class="top-header">
@@ -51,23 +73,26 @@
                     <button class="filter-tab" onclick="loadTop('all')">TẤT CẢ</button>
                 </div>
                 <div class="top-list" id="topList">
-                    <div class="loading-state">⏳ Đang tải...</div>
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>⏳ Đang tải...</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- PROFILE PAGE -->
+        <!-- ===== PROFILE PAGE ===== -->
         <div id="profilePage" class="page" style="display:none">
             <div class="profile-screen">
                 <div class="user-header">
-                    <div class="avatar" id="avatar">Đ</div>
+                    <div class="avatar" id="profileAvatar">Đ</div>
                     <div class="user-info">
                         <div class="username" id="profileUsername">Loading...</div>
                         <div class="user-id" id="profileUserId">ID: ...</div>
                     </div>
                     <div class="balance-usdt">
                         <span id="profileBalance">0</span>đ
-                        <span class="badge" id="profileRole">CUSTOMER</span>
+                        <span class="badge-role" id="profileRole">CUSTOMER</span>
                     </div>
                 </div>
 
@@ -104,8 +129,63 @@
                 <div class="history-section">
                     <div class="section-title">📦 LỊCH SỬ MUA HÀNG</div>
                     <div id="purchaseHistory">
-                        <div class="empty-state">Chưa có SP nào.</div>
+                        <div class="empty-state">
+                            <span class="empty-icon">📭</span>
+                            Chưa có SP nào.
+                        </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ADMIN PAGE ===== -->
+        <div id="adminPage" class="page" style="display:none">
+            <div class="admin-panel">
+                <div class="admin-header">
+                    <h2>🔧 Admin Panel</h2>
+                    <p>Quản lý shop của bạn</p>
+                </div>
+
+                <!-- Thêm sản phẩm -->
+                <div class="admin-section">
+                    <h3>➕ Thêm sản phẩm mới</h3>
+                    <div class="admin-form">
+                        <input type="text" id="adminProductName" placeholder="Tên sản phẩm">
+                        <input type="text" id="adminProductPackage" placeholder="Gói (1h, 1d, 7d, 30d)">
+                        <input type="number" id="adminProductPrice" placeholder="Giá Customer (VND)">
+                        <input type="number" id="adminResellerPrice" placeholder="Giá Reseller (VND)">
+                        <input type="number" id="adminProductStock" placeholder="Số lượng kho">
+                        <button onclick="adminAddProduct()" class="admin-btn">✅ Thêm sản phẩm</button>
+                    </div>
+                </div>
+
+                <!-- Thêm key -->
+                <div class="admin-section">
+                    <h3>🔑 Thêm Key vào kho</h3>
+                    <div class="admin-form">
+                        <select id="adminKeyProduct">
+                            <option value="">Chọn sản phẩm</option>
+                        </select>
+                        <textarea id="adminKeyList" rows="5" placeholder="Nhập key, mỗi key 1 dòng"></textarea>
+                        <button onclick="adminAddKeys()" class="admin-btn">📥 Nhập key</button>
+                    </div>
+                </div>
+
+                <!-- Quản lý Reseller -->
+                <div class="admin-section">
+                    <h3>👥 Quản lý Reseller</h3>
+                    <div class="admin-form">
+                        <input type="text" id="adminResellerId" placeholder="ID Telegram của Reseller">
+                        <input type="number" id="adminResellerDiscount" placeholder="% hoa hồng (VD: 30)" value="30">
+                        <button onclick="adminAddReseller()" class="admin-btn">➕ Thêm Reseller</button>
+                    </div>
+                    <div id="adminResellerList" class="admin-list"></div>
+                </div>
+
+                <!-- Danh sách sản phẩm -->
+                <div class="admin-section">
+                    <h3>📦 Danh sách sản phẩm</h3>
+                    <div id="adminProductList" class="admin-list"></div>
                 </div>
             </div>
         </div>
@@ -128,6 +208,10 @@
         <button class="nav-btn" onclick="showPage('profile')">
             <span class="nav-icon">👤</span>
             <span class="nav-label">CÁ NHÂN</span>
+        </button>
+        <button class="nav-btn" onclick="showAdminPage()" id="adminNavBtn" style="display:none">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">ADMIN</span>
         </button>
     </div>
 
