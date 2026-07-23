@@ -307,7 +307,7 @@ async function loadProfile() {
         document.getElementById('commissionEarned').textContent = formatPrice(userData.commission_earned || 0);
         
         // 🔥 QUAN TRỌNG: Thay 'DungModzShop_bot' bằng username bot của bạn
-        const botUsername = 'DungModzShop_bot';
+        const botUsername = 'shopddung_bot';
         document.getElementById('refLink').value = `https://t.me/${botUsername}?start=${userData.id}`;
         
         await loadOrders(userData.id);
