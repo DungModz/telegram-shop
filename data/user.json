@@ -1,0 +1,17 @@
+[
+  {
+    "id": "7305897951",
+    "username": "ducdung",
+    "first_name": "Duc",
+    "last_name": "Dung",
+    "role": "admin",
+    "balance": 1000000,
+    "total_recharge": 500000,
+    "total_spent": 0,
+    "commission_rate": 10,
+    "commission_earned": 0,
+    "referred_by": null,
+    "referrals": [],
+    "created_at": "2026-07-23T10:00:00"
+  }
+]
