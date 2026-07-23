@@ -1,0 +1,18 @@
+[
+  {
+    "id": "K_001",
+    "product_id": "P_001",
+    "code": "MIGUL-BV-001-XYZ123",
+    "status": "available",
+    "buyer": null,
+    "sold_at": null
+  },
+  {
+    "id": "K_002",
+    "product_id": "P_001",
+    "code": "MIGUL-BV-002-ABC456",
+    "status": "available",
+    "buyer": null,
+    "sold_at": null
+  }
+]
