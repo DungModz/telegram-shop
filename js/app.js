@@ -2,9 +2,14 @@ const APP = {
     user: null,
     products: [],
     currentPage: 'buy',
-    currentTopFilter: 'month'
+    currentTopFilter: 'month',
+    selectedPackage: '30d',
+    quantity: 1,
+    paymentMethod: 'vnd',
+    discount: 0
 };
 
+// ============ FORMAT ============
 function formatPrice(price) {
     if (!price) return '0đ';
     return price.toLocaleString('vi-VN') + 'đ';
@@ -16,6 +21,7 @@ function formatDate(timestamp) {
     return date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN');
 }
 
+// ============ PAGE NAVIGATION ============
 function showPage(page) {
     document.querySelectorAll('.page').forEach(el => {
         el.style.display = 'none';
@@ -45,8 +51,10 @@ function showPage(page) {
     if (page === 'top') loadTop(APP.currentTopFilter);
     if (page === 'profile') loadProfile();
     if (page === 'admin') loadAdminPanel();
+    if (page === 'buy') updateBuyButton();
 }
 
+// ============ INIT ============
 async function initApp() {
     try {
         const user = TG.user;
@@ -65,6 +73,9 @@ async function initApp() {
             document.getElementById('adminNavBtn').style.display = 'flex';
         }
         
+        // Update user info everywhere
+        await updateUserUI();
+        
         await loadProducts();
         await loadProfile();
         showPage('buy');
@@ -76,80 +87,118 @@ async function initApp() {
     }
 }
 
-async function loadProducts() {
+// ============ UPDATE USER UI ============
+async function updateUserUI() {
+    if (!APP.user) return;
+    
     try {
-        const products = await API.getProducts();
-        APP.products = products;
-        renderProducts(products);
-    } catch (error) {
-        console.error('Error loading products:', error);
-        document.getElementById('productList').innerHTML = 
-            '<div class="empty-state"><span class="empty-icon">❌</span>Không thể tải sản phẩm</div>';
-    }
-}
-
-function renderProducts(products) {
-    const container = document.getElementById('productList');
-    if (!container) return;
-    
-    if (products.length === 0) {
-        container.innerHTML = '<div class="empty-state"><span class="empty-icon">📭</span>Chưa có sản phẩm</div>';
-        return;
-    }
-    
-    let html = '';
-    products.forEach(p => {
-        const price = APP.user?.role === 'admin' || APP.user?.role === 'reseller' 
-            ? p.reseller_price || p.price 
-            : p.price;
+        const userData = await API.getUser(APP.user.id);
+        APP.user = userData;
         
-        html += `
-            <div class="product-card" onclick="buyProduct('${p.id}')">
-                <div class="product-top">
-                    <h3>${p.name}</h3>
-                    <span class="product-tag">${p.package || 'VIP'}</span>
-                </div>
-                <p>${p.description || 'Hỗ trợ lên đến iOS 27, dễ cài đặt và dễ sử dụng'}</p>
-                <div class="product-bottom">
-                    <div class="product-price">${formatPrice(price)}</div>
-                    <div class="product-stock">
-                        <span class="dot"></span>
-                        Kho: ${p.stock || 999}
-                    </div>
-                </div>
-                <button class="buy-btn" style="margin-top:10px;width:100%">MUA NGAY</button>
-            </div>
-        `;
-    });
-    
-    container.innerHTML = html;
+        const tgUser = TG.user;
+        const name = tgUser?.first_name || tgUser?.username || userData.username || 'User';
+        const avatar = name.charAt(0).toUpperCase();
+        
+        // Update all user headers
+        document.querySelectorAll('#buyUsername, #profileUsername, #rechargeUsername').forEach(el => {
+            if (el) el.textContent = name;
+        });
+        document.querySelectorAll('#buyUserId, #profileUserId, #rechargeUserId').forEach(el => {
+            if (el) el.textContent = `ID: ${userData.id}`;
+        });
+        document.querySelectorAll('#buyAvatar, #profileAvatar, #rechargeAvatar').forEach(el => {
+            if (el) el.textContent = avatar;
+        });
+        document.querySelectorAll('#buyBalance, #profileBalance, #rechargeBalance').forEach(el => {
+            if (el) el.textContent = userData.balance || 0;
+        });
+        document.querySelectorAll('#buyRole, #profileRole').forEach(el => {
+            if (el) el.textContent = (userData.role || 'CUSTOMER').toUpperCase();
+        });
+        
+    } catch (error) {
+        console.error('Error updating user UI:', error);
+    }
 }
 
-async function buyProduct(productId) {
+// ============ PACKAGE FUNCTIONS ============
+function selectPackage(pkg) {
+    APP.selectedPackage = pkg;
+    document.querySelectorAll('.package-card').forEach(el => {
+        el.classList.remove('active');
+    });
+    event.currentTarget.classList.add('active');
+    updateBuyButton();
+}
+
+function changeQty(delta) {
+    const newQty = APP.quantity + delta;
+    if (newQty >= 1) {
+        APP.quantity = newQty;
+        document.getElementById('qtyDisplay').textContent = newQty;
+        updateBuyButton();
+    }
+}
+
+function selectPayment(method) {
+    APP.paymentMethod = method;
+    document.querySelectorAll('.payment-btn').forEach(el => {
+        el.classList.remove('active');
+    });
+    event.currentTarget.classList.add('active');
+}
+
+function applyVoucher() {
+    const code = document.getElementById('voucherInput').value.trim();
+    if (code === 'SALE10') {
+        APP.discount = 0.1;
+        TG.showAlert('✅ Áp dụng mã giảm 10% thành công!');
+    } else if (code === 'SALE20') {
+        APP.discount = 0.2;
+        TG.showAlert('✅ Áp dụng mã giảm 20% thành công!');
+    } else if (code) {
+        TG.showAlert('❌ Mã voucher không hợp lệ!');
+        APP.discount = 0;
+    }
+    updateBuyButton();
+}
+
+function updateBuyButton() {
+    const prices = {
+        '1d': 50000,
+        '7d': 150000,
+        '30d': 350000
+    };
+    const price = prices[APP.selectedPackage] || 350000;
+    const total = price * APP.quantity * (1 - APP.discount);
+    document.getElementById('buyNowBtn').textContent = `Mua ngay (x${APP.quantity}) ${formatPrice(total)}`;
+}
+
+// ============ PROCESS BUY ============
+async function processBuy() {
     if (!APP.user) {
         TG.showAlert('Vui lòng đăng nhập!');
         return;
     }
     
-    const product = APP.products.find(p => p.id === productId);
-    if (!product) {
-        TG.showAlert('Sản phẩm không tồn tại!');
-        return;
-    }
-    
-    const price = APP.user?.role === 'admin' || APP.user?.role === 'reseller'
-        ? product.reseller_price || product.price
-        : product.price;
+    const prices = {
+        '1d': 50000,
+        '7d': 150000,
+        '30d': 350000
+    };
+    const price = prices[APP.selectedPackage] || 350000;
+    const total = price * APP.quantity * (1 - APP.discount);
     
     const confirmed = await TG.showConfirm(
-        `Bạn muốn mua:\n${product.name}\nGiá: ${formatPrice(price)}`
+        `Bạn muốn mua:\nGói: ${APP.selectedPackage}\nSố lượng: ${APP.quantity}\nTổng: ${formatPrice(total)}`
     );
     
     if (!confirmed) return;
     
     try {
         TG.haptic('heavy');
-        const result = await API.buy(APP.user.id, productId, 1);
+        // Gọi API mua hàng
+        const result = await API.buy(APP.user.id, APP.selectedPackage, APP.quantity);
         
         if (!result.success) {
             TG.showAlert(result.error || 'Mua thất bại!');
@@ -164,13 +213,14 @@ async function buyProduct(productId) {
         });
         
         await loadProfile();
-        await loadProducts();
+        await updateUserUI();
         
     } catch (error) {
         TG.showAlert('Có lỗi xảy ra, vui lòng thử lại!');
     }
 }
 
+// ============ RECHARGE ============
 async function recharge(amount) {
     if (!APP.user) {
         TG.showAlert('Vui lòng đăng nhập!');
@@ -195,8 +245,9 @@ async function recharge(amount) {
         TG.showAlert(`✅ Nạp thành công ${formatPrice(amount)}!`);
         APP.user = result.user;
         await loadProfile();
+        await updateUserUI();
         document.getElementById('rechargeResult').innerHTML = 
-            `<div class="empty-state"><span class="empty-icon">✅</span>Nạp thành công ${formatPrice(amount)}</div>`;
+            `<div class="empty-state">✅ Nạp thành công ${formatPrice(amount)}</div>`;
         
     } catch (error) {
         TG.showAlert('Có lỗi xảy ra, vui lòng thử lại!');
@@ -216,6 +267,17 @@ async function rechargeCustom() {
     input.value = '';
 }
 
+// ============ LOAD PRODUCTS ============
+async function loadProducts() {
+    try {
+        const products = await API.getProducts();
+        APP.products = products;
+    } catch (error) {
+        console.error('Error loading products:', error);
+    }
+}
+
+// ============ LOAD TOP ============
 async function loadTop(filter) {
     APP.currentTopFilter = filter || 'month';
     
@@ -269,32 +331,13 @@ async function loadTop(filter) {
     }
 }
 
+// ============ LOAD PROFILE ============
 async function loadProfile() {
     if (!APP.user) return;
     
     try {
         const userData = await API.getUser(APP.user.id);
         APP.user = userData;
-        
-        const name = userData.first_name || userData.username || 'User';
-        const avatar = name.charAt(0).toUpperCase();
-        
-        // Update all user headers
-        document.querySelectorAll('#buyUsername, #profileUsername').forEach(el => {
-            el.textContent = name;
-        });
-        document.querySelectorAll('#buyUserId, #profileUserId').forEach(el => {
-            el.textContent = `ID: ${userData.id}`;
-        });
-        document.querySelectorAll('#buyAvatar, #profileAvatar').forEach(el => {
-            el.textContent = avatar;
-        });
-        document.querySelectorAll('#buyBalance, #profileBalance').forEach(el => {
-            el.textContent = userData.balance || 0;
-        });
-        document.querySelectorAll('#buyRole, #profileRole').forEach(el => {
-            el.textContent = (userData.role || 'CUSTOMER').toUpperCase();
-        });
         
         // Stats
         document.getElementById('totalBought').textContent = userData.total_bought || 0;
@@ -317,6 +360,7 @@ async function loadProfile() {
     }
 }
 
+// ============ LOAD ORDERS ============
 async function loadOrders(userId) {
     const container = document.getElementById('purchaseHistory');
     if (!container) return;
@@ -350,6 +394,7 @@ async function loadOrders(userId) {
     }
 }
 
+// ============ COPY REF LINK ============
 function copyRefLink() {
     const input = document.getElementById('refLink');
     if (!input) return;
@@ -359,6 +404,7 @@ function copyRefLink() {
     TG.showAlert('✅ Đã sao chép link giới thiệu!');
 }
 
+// ============ HANDLE REFERRAL ============
 function handleReferral() {
     const urlParams = new URLSearchParams(window.location.search);
     const startParam = urlParams.get('start');
@@ -374,7 +420,6 @@ function handleReferral() {
 }
 
 // ============ ADMIN FUNCTIONS ============
-
 function isAdmin() {
     return APP.user?.role === 'admin';
 }
@@ -545,7 +590,11 @@ document.addEventListener('DOMContentLoaded', initApp);
 
 // ============ EXPOSE ============
 window.showPage = showPage;
-window.buyProduct = buyProduct;
+window.selectPackage = selectPackage;
+window.changeQty = changeQty;
+window.selectPayment = selectPayment;
+window.applyVoucher = applyVoucher;
+window.processBuy = processBuy;
 window.recharge = recharge;
 window.rechargeCustom = rechargeCustom;
 window.loadTop = loadTop;
