@@ -25,7 +25,8 @@ function showPage(page) {
         'buy': 'buyPage',
         'recharge': 'rechargePage',
         'top': 'topPage',
-        'profile': 'profilePage'
+        'profile': 'profilePage',
+        'admin': 'adminPage'
     };
     
     const target = document.getElementById(pageMap[page]);
@@ -33,7 +34,7 @@ function showPage(page) {
     
     document.querySelectorAll('.nav-btn').forEach((btn, index) => {
         btn.classList.remove('active');
-        const pages = ['buy', 'recharge', 'top', 'profile'];
+        const pages = ['buy', 'recharge', 'top', 'profile', 'admin'];
         if (pages[index] === page) {
             btn.classList.add('active');
         }
@@ -43,6 +44,7 @@ function showPage(page) {
     
     if (page === 'top') loadTop(APP.currentTopFilter);
     if (page === 'profile') loadProfile();
+    if (page === 'admin') loadAdminPanel();
 }
 
 async function initApp() {
@@ -57,6 +59,11 @@ async function initApp() {
         APP.user = authResult.user;
         
         console.log('✅ User authenticated:', APP.user);
+        
+        // Show admin nav if user is admin
+        if (APP.user?.role === 'admin') {
+            document.getElementById('adminNavBtn').style.display = 'flex';
+        }
         
         await loadProducts();
         await loadProfile();
@@ -77,7 +84,7 @@ async function loadProducts() {
     } catch (error) {
         console.error('Error loading products:', error);
         document.getElementById('productList').innerHTML = 
-            '<div class="empty-state">❌ Không thể tải sản phẩm</div>';
+            '<div class="empty-state"><span class="empty-icon">❌</span>Không thể tải sản phẩm</div>';
     }
 }
 
@@ -86,7 +93,7 @@ function renderProducts(products) {
     if (!container) return;
     
     if (products.length === 0) {
-        container.innerHTML = '<div class="empty-state">📭 Chưa có sản phẩm</div>';
+        container.innerHTML = '<div class="empty-state"><span class="empty-icon">📭</span>Chưa có sản phẩm</div>';
         return;
     }
     
@@ -96,18 +103,21 @@ function renderProducts(products) {
             ? p.reseller_price || p.price 
             : p.price;
         
-        const priceLabel = APP.user?.role === 'admin' || APP.user?.role === 'reseller'
-            ? `💰 Giá Reseller: ${formatPrice(p.reseller_price || p.price)}`
-            : '';
-        
         html += `
             <div class="product-card" onclick="buyProduct('${p.id}')">
-                <h3>${p.name}</h3>
-                <p>${p.package || ''}</p>
-                <div class="product-price">${formatPrice(price)}</div>
-                ${priceLabel ? `<div class="product-stock">${priceLabel}</div>` : ''}
-                <div class="product-stock">📦 Kho: ${p.stock || 999}</div>
-                <button class="buy-btn">MUA NGAY</button>
+                <div class="product-top">
+                    <h3>${p.name}</h3>
+                    <span class="product-tag">${p.package || 'VIP'}</span>
+                </div>
+                <p>${p.description || 'Hỗ trợ lên đến iOS 27, dễ cài đặt và dễ sử dụng'}</p>
+                <div class="product-bottom">
+                    <div class="product-price">${formatPrice(price)}</div>
+                    <div class="product-stock">
+                        <span class="dot"></span>
+                        Kho: ${p.stock || 999}
+                    </div>
+                </div>
+                <button class="buy-btn" style="margin-top:10px;width:100%">MUA NGAY</button>
             </div>
         `;
     });
@@ -186,7 +196,7 @@ async function recharge(amount) {
         APP.user = result.user;
         await loadProfile();
         document.getElementById('rechargeResult').innerHTML = 
-            `<div class="empty-state">✅ Nạp thành công ${formatPrice(amount)}</div>`;
+            `<div class="empty-state"><span class="empty-icon">✅</span>Nạp thành công ${formatPrice(amount)}</div>`;
         
     } catch (error) {
         TG.showAlert('Có lỗi xảy ra, vui lòng thử lại!');
@@ -217,13 +227,13 @@ async function loadTop(filter) {
     const container = document.getElementById('topList');
     if (!container) return;
     
-    container.innerHTML = '<div class="loading-state">⏳ Đang tải...</div>';
+    container.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>⏳ Đang tải...</p></div>`;
     
     try {
         const users = await API.getTop(APP.currentTopFilter);
         
         if (users.length === 0) {
-            container.innerHTML = '<div class="empty-state">📭 Chưa có dữ liệu nạp tiền</div>';
+            container.innerHTML = '<div class="empty-state"><span class="empty-icon">📭</span>Chưa có dữ liệu nạp tiền</div>';
             return;
         }
         
@@ -237,7 +247,7 @@ async function loadTop(filter) {
             
             const displayName = u.first_name || u.username || 'Người dùng';
             const usernameDisplay = u.username ? `@${u.username}` : '';
-            const amount = u.total_recharge || u.display_amount || 0;
+            const amount = u.total_recharge || 0;
             
             html += `
                 <div class="top-item ${rankClass}">
@@ -255,7 +265,7 @@ async function loadTop(filter) {
         container.innerHTML = html;
         
     } catch (error) {
-        container.innerHTML = '<div class="empty-state">❌ Có lỗi xảy ra</div>';
+        container.innerHTML = '<div class="empty-state"><span class="empty-icon">❌</span>Có lỗi xảy ra</div>';
     }
 }
 
@@ -267,22 +277,37 @@ async function loadProfile() {
         APP.user = userData;
         
         const name = userData.first_name || userData.username || 'User';
-        document.getElementById('profileUsername').textContent = name;
-        document.getElementById('profileUserId').textContent = `ID: ${userData.id}`;
-        document.getElementById('profileBalance').textContent = `${userData.balance || 0}`;
-        document.getElementById('profileRole').textContent = (userData.role || 'CUSTOMER').toUpperCase();
-        document.getElementById('avatar').textContent = name.charAt(0).toUpperCase();
+        const avatar = name.charAt(0).toUpperCase();
         
+        // Update all user headers
+        document.querySelectorAll('#buyUsername, #profileUsername').forEach(el => {
+            el.textContent = name;
+        });
+        document.querySelectorAll('#buyUserId, #profileUserId').forEach(el => {
+            el.textContent = `ID: ${userData.id}`;
+        });
+        document.querySelectorAll('#buyAvatar, #profileAvatar').forEach(el => {
+            el.textContent = avatar;
+        });
+        document.querySelectorAll('#buyBalance, #profileBalance').forEach(el => {
+            el.textContent = userData.balance || 0;
+        });
+        document.querySelectorAll('#buyRole, #profileRole').forEach(el => {
+            el.textContent = (userData.role || 'CUSTOMER').toUpperCase();
+        });
+        
+        // Stats
         document.getElementById('totalBought').textContent = userData.total_bought || 0;
         document.getElementById('totalSpent').textContent = formatPrice(userData.total_spent || 0);
         document.getElementById('totalRecharge').textContent = formatPrice(userData.total_recharge || 0);
         
+        // Referral
         const rate = userData.commission_rate || 10;
         document.getElementById('commissionRate').textContent = `${rate}%`;
         document.getElementById('commissionEarned').textContent = formatPrice(userData.commission_earned || 0);
         
-        // 🔥 Thay 'minhphucstorebot' bằng username bot của bạn
-        const botUsername = 'shopddung_bot';
+        // 🔥 QUAN TRỌNG: Thay 'DungModzShop_bot' bằng username bot của bạn
+        const botUsername = 'DungModzShop_bot';
         document.getElementById('refLink').value = `https://t.me/${botUsername}?start=${userData.id}`;
         
         await loadOrders(userData.id);
@@ -300,7 +325,7 @@ async function loadOrders(userId) {
         const orders = await API.getOrders(userId);
         
         if (orders.length === 0) {
-            container.innerHTML = '<div class="empty-state">Chưa có SP nào.</div>';
+            container.innerHTML = `<div class="empty-state"><span class="empty-icon">📭</span>Chưa có SP nào.</div>`;
             return;
         }
         
@@ -321,7 +346,7 @@ async function loadOrders(userId) {
         container.innerHTML = html;
         
     } catch (error) {
-        container.innerHTML = '<div class="empty-state">❌ Không thể tải lịch sử</div>';
+        container.innerHTML = '<div class="empty-state"><span class="empty-icon">❌</span>Không thể tải lịch sử</div>';
     }
 }
 
@@ -348,8 +373,177 @@ function handleReferral() {
     }
 }
 
+// ============ ADMIN FUNCTIONS ============
+
+function isAdmin() {
+    return APP.user?.role === 'admin';
+}
+
+async function showAdminPage() {
+    if (!isAdmin()) {
+        TG.showAlert('❌ Bạn không có quyền truy cập Admin Panel!');
+        showPage('buy');
+        return;
+    }
+    showPage('admin');
+    await loadAdminPanel();
+}
+
+async function loadAdminPanel() {
+    if (!isAdmin()) return;
+    await loadAdminProducts();
+    await loadAdminKeyProducts();
+}
+
+async function loadAdminProducts() {
+    try {
+        const products = await API.getProducts();
+        const container = document.getElementById('adminProductList');
+        
+        if (!products || products.length === 0) {
+            container.innerHTML = '<div class="empty-state">Chưa có sản phẩm</div>';
+            return;
+        }
+        
+        let html = '';
+        products.forEach(p => {
+            html += `
+                <div class="admin-list-item">
+                    <div class="info">
+                        <div class="name">${p.name}</div>
+                        <div class="detail">Giá: ${formatPrice(p.price)} | Reseller: ${formatPrice(p.reseller_price)} | Kho: ${p.stock}</div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-delete" onclick="adminDeleteProduct('${p.id}')">🗑️</button>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Error loading admin products:', error);
+    }
+}
+
+async function loadAdminKeyProducts() {
+    try {
+        const products = await API.getProducts();
+        const select = document.getElementById('adminKeyProduct');
+        
+        select.innerHTML = '<option value="">Chọn sản phẩm</option>';
+        products.forEach(p => {
+            select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+        });
+    } catch (error) {
+        console.error('Error loading key products:', error);
+    }
+}
+
+async function adminAddProduct() {
+    if (!isAdmin()) {
+        TG.showAlert('❌ Bạn không có quyền!');
+        return;
+    }
+    
+    const name = document.getElementById('adminProductName').value;
+    const pkg = document.getElementById('adminProductPackage').value;
+    const price = parseInt(document.getElementById('adminProductPrice').value);
+    const resellerPrice = parseInt(document.getElementById('adminResellerPrice').value);
+    const stock = parseInt(document.getElementById('adminProductStock').value);
+    
+    if (!name || !pkg || !price || !resellerPrice || !stock) {
+        TG.showAlert('⚠️ Vui lòng nhập đầy đủ thông tin!');
+        return;
+    }
+    
+    try {
+        const result = await API.addProduct(APP.user.id, {
+            name, package: pkg, price, reseller_price: resellerPrice, stock
+        });
+        
+        if (result.success) {
+            TG.showAlert('✅ Thêm sản phẩm thành công!');
+            document.getElementById('adminProductName').value = '';
+            document.getElementById('adminProductPackage').value = '';
+            document.getElementById('adminProductPrice').value = '';
+            document.getElementById('adminResellerPrice').value = '';
+            document.getElementById('adminProductStock').value = '';
+            await loadAdminProducts();
+            await loadProducts();
+        }
+    } catch (error) {
+        TG.showAlert('❌ Có lỗi xảy ra: ' + error.message);
+    }
+}
+
+async function adminAddKeys() {
+    if (!isAdmin()) {
+        TG.showAlert('❌ Bạn không có quyền!');
+        return;
+    }
+    
+    const productId = document.getElementById('adminKeyProduct').value;
+    const keyList = document.getElementById('adminKeyList').value;
+    
+    if (!productId) {
+        TG.showAlert('⚠️ Vui lòng chọn sản phẩm!');
+        return;
+    }
+    
+    if (!keyList.trim()) {
+        TG.showAlert('⚠️ Vui lòng nhập key!');
+        return;
+    }
+    
+    const keys = keyList.split('\n').filter(k => k.trim());
+    TG.showAlert(`✅ Đã thêm ${keys.length} key! (Chức năng đang phát triển)`);
+    document.getElementById('adminKeyList').value = '';
+}
+
+async function adminAddReseller() {
+    if (!isAdmin()) {
+        TG.showAlert('❌ Bạn không có quyền!');
+        return;
+    }
+    
+    const targetId = document.getElementById('adminResellerId').value.trim();
+    const discount = parseInt(document.getElementById('adminResellerDiscount').value) || 30;
+    
+    if (!targetId) {
+        TG.showAlert('⚠️ Vui lòng nhập ID Telegram!');
+        return;
+    }
+    
+    try {
+        const result = await API.setUserRole(APP.user.id, targetId, 'reseller', discount);
+        if (result.success) {
+            TG.showAlert(`✅ Đã set ${targetId} thành Reseller!`);
+            document.getElementById('adminResellerId').value = '';
+            await loadAdminPanel();
+        }
+    } catch (error) {
+        TG.showAlert('❌ Có lỗi xảy ra: ' + error.message);
+    }
+}
+
+async function adminDeleteProduct(productId) {
+    if (!isAdmin()) {
+        TG.showAlert('❌ Bạn không có quyền!');
+        return;
+    }
+    
+    const confirmed = await TG.showConfirm('Bạn có chắc muốn xóa sản phẩm này?');
+    if (!confirmed) return;
+    
+    TG.showAlert('✅ Đã xóa sản phẩm! (Chức năng đang phát triển)');
+    await loadAdminProducts();
+    await loadProducts();
+}
+
+// ============ INIT ============
 document.addEventListener('DOMContentLoaded', initApp);
 
+// ============ EXPOSE ============
 window.showPage = showPage;
 window.buyProduct = buyProduct;
 window.recharge = recharge;
@@ -357,3 +551,8 @@ window.rechargeCustom = rechargeCustom;
 window.loadTop = loadTop;
 window.loadProfile = loadProfile;
 window.copyRefLink = copyRefLink;
+window.showAdminPage = showAdminPage;
+window.adminAddProduct = adminAddProduct;
+window.adminAddKeys = adminAddKeys;
+window.adminAddReseller = adminAddReseller;
+window.adminDeleteProduct = adminDeleteProduct;
