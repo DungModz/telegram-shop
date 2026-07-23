@@ -3,23 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shop Duc Dung - Auto 24/7</title>
+    <title>Duc Dung - Store Hack</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div id="app">
-        <!-- ===== HEADER ===== -->
-        <div class="app-header">
-            <div class="brand">
-                <div class="brand-icon">🛒</div>
-                <div class="brand-text">Shop Duc Dung</div>
-            </div>
-            <span class="badge-online">● 24/7</span>
-        </div>
-
         <!-- ===== BUY PAGE ===== -->
         <div id="buyPage" class="page active">
+            <!-- Header User -->
             <div class="user-header">
                 <div class="avatar" id="buyAvatar">Đ</div>
                 <div class="user-info">
@@ -28,20 +20,80 @@
                 </div>
                 <div class="balance-usdt">
                     <span id="buyBalance">0</span>đ
-                    <span class="badge-role" id="buyRole">CUSTOMER</span>
+                    <span class="badge" id="buyRole">CUSTOMER</span>
                 </div>
             </div>
-            <div class="product-list" id="productList">
-                <div class="loading-state">
-                    <div class="spinner"></div>
-                    <p>⏳ Đang tải sản phẩm...</p>
+
+            <!-- Title -->
+            <div class="section-title">Chọn gói</div>
+
+            <!-- Package Grid -->
+            <div class="package-grid">
+                <div class="package-card" onclick="selectPackage('1d')">
+                    <div class="package-time">1 Ngày</div>
+                    <div class="package-stock">Kho: 9</div>
+                    <div class="package-price">50.000₫</div>
+                    <div class="package-usdt">$3.00</div>
+                </div>
+                <div class="package-card" onclick="selectPackage('7d')">
+                    <div class="package-time">7 Ngày</div>
+                    <div class="package-stock">Kho: 1</div>
+                    <div class="package-price">150.000₫</div>
+                    <div class="package-usdt">$8.00</div>
+                </div>
+                <div class="package-card active" onclick="selectPackage('30d')">
+                    <div class="package-time">30 Ngày</div>
+                    <div class="package-stock">Kho: 2</div>
+                    <div class="package-price">350.000₫</div>
+                    <div class="package-usdt">$15.00</div>
                 </div>
             </div>
+
+            <!-- Quantity -->
+            <div class="quantity-section">
+                <label>Số lượng</label>
+                <div class="quantity-control">
+                    <button onclick="changeQty(-1)">-</button>
+                    <span id="qtyDisplay">1</span>
+                    <button onclick="changeQty(1)">+</button>
+                </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="payment-section">
+                <label>Thanh toán bằng</label>
+                <div class="payment-options">
+                    <button class="payment-btn active" onclick="selectPayment('vnd')">VNĐ</button>
+                    <button class="payment-btn" onclick="selectPayment('usdt')">USDT</button>
+                </div>
+            </div>
+
+            <!-- Voucher -->
+            <div class="voucher-section">
+                <input type="text" placeholder="Nhập mã voucher giảm giá" id="voucherInput">
+                <button onclick="applyVoucher()">ÁP DỤNG</button>
+            </div>
+
+            <!-- Buy Button -->
+            <button class="buy-now-btn" onclick="processBuy()" id="buyNowBtn">
+                Mua ngay (x1) 350.000₫
+            </button>
         </div>
 
         <!-- ===== RECHARGE PAGE ===== -->
         <div id="rechargePage" class="page" style="display:none">
             <div class="recharge-screen">
+                <div class="user-header">
+                    <div class="avatar" id="rechargeAvatar">Đ</div>
+                    <div class="user-info">
+                        <div class="username" id="rechargeUsername">Loading...</div>
+                        <div class="user-id" id="rechargeUserId">ID: ...</div>
+                    </div>
+                    <div class="balance-usdt">
+                        <span id="rechargeBalance">0</span>đ
+                        <span class="badge">CUSTOMER</span>
+                    </div>
+                </div>
                 <h2>💰 Nạp tiền</h2>
                 <p class="recharge-desc">Chọn số tiền muốn nạp:</p>
                 <div class="recharge-amounts">
@@ -92,7 +144,7 @@
                     </div>
                     <div class="balance-usdt">
                         <span id="profileBalance">0</span>đ
-                        <span class="badge-role" id="profileRole">CUSTOMER</span>
+                        <span class="badge" id="profileRole">CUSTOMER</span>
                     </div>
                 </div>
 
@@ -118,7 +170,7 @@
                     </p>
                     <div class="referral-link-box">
                         <input type="text" id="refLink" readonly>
-                        <button onclick="copyRefLink()">📋 COPY LINK</button>
+                        <button onclick="copyRefLink()">📋 COPY LINK GIỚI THIỆU</button>
                     </div>
                     <div class="commission-box">
                         <span>Tiền Hoa Hồng Đã Nhận:</span>
@@ -127,12 +179,9 @@
                 </div>
 
                 <div class="history-section">
-                    <div class="section-title">📦 LỊCH SỬ MUA HÀNG</div>
+                    <div class="section-title">📦 KHO CỦA BẠN (LỊCH SỬ CHI TIẾT)</div>
                     <div id="purchaseHistory">
-                        <div class="empty-state">
-                            <span class="empty-icon">📭</span>
-                            Chưa có SP nào.
-                        </div>
+                        <div class="empty-state">Chưa có SP nào.</div>
                     </div>
                 </div>
             </div>
@@ -145,8 +194,6 @@
                     <h2>🔧 Admin Panel</h2>
                     <p>Quản lý shop của bạn</p>
                 </div>
-
-                <!-- Thêm sản phẩm -->
                 <div class="admin-section">
                     <h3>➕ Thêm sản phẩm mới</h3>
                     <div class="admin-form">
@@ -158,8 +205,6 @@
                         <button onclick="adminAddProduct()" class="admin-btn">✅ Thêm sản phẩm</button>
                     </div>
                 </div>
-
-                <!-- Thêm key -->
                 <div class="admin-section">
                     <h3>🔑 Thêm Key vào kho</h3>
                     <div class="admin-form">
@@ -170,8 +215,6 @@
                         <button onclick="adminAddKeys()" class="admin-btn">📥 Nhập key</button>
                     </div>
                 </div>
-
-                <!-- Quản lý Reseller -->
                 <div class="admin-section">
                     <h3>👥 Quản lý Reseller</h3>
                     <div class="admin-form">
@@ -181,8 +224,6 @@
                     </div>
                     <div id="adminResellerList" class="admin-list"></div>
                 </div>
-
-                <!-- Danh sách sản phẩm -->
                 <div class="admin-section">
                     <h3>📦 Danh sách sản phẩm</h3>
                     <div id="adminProductList" class="admin-list"></div>
