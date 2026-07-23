@@ -1,0 +1,492 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: #0a0a12;
+    color: #fff;
+    min-height: 100vh;
+    padding-bottom: 70px;
+    overflow-x: hidden;
+}
+
+.page {
+    padding: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.loading-state, .empty-state {
+    text-align: center;
+    color: #8888aa;
+    padding: 40px 0;
+    font-size: 14px;
+}
+
+.product-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.product-card {
+    background: #14141f;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #1f1f35;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.product-card:active {
+    transform: scale(0.98);
+}
+
+.product-card h3 {
+    font-size: 16px;
+    margin-bottom: 4px;
+    color: #fff;
+}
+
+.product-card p {
+    font-size: 13px;
+    color: #8888aa;
+    margin-bottom: 8px;
+}
+
+.product-price {
+    color: #ff6b6b;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.product-stock {
+    font-size: 12px;
+    color: #4ade80;
+}
+
+.buy-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    float: right;
+    margin-top: -30px;
+    cursor: pointer;
+}
+
+.buy-btn:active {
+    transform: scale(0.95);
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: #0a0a12;
+    border-top: 1px solid #1f1f35;
+    padding: 6px 0 env(safe-area-inset-bottom);
+    z-index: 100;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: transparent;
+    border: none;
+    color: #8888aa;
+    padding: 6px 0;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: inherit;
+}
+
+.nav-btn.active {
+    color: #667eea;
+}
+
+.nav-btn:active {
+    transform: scale(0.95);
+}
+
+.nav-icon {
+    font-size: 22px;
+}
+
+.nav-label {
+    font-size: 10px;
+    margin-top: 2px;
+    font-weight: 600;
+}
+
+.user-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #14141f;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+.avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.username {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.user-id {
+    font-size: 12px;
+    color: #8888aa;
+}
+
+.balance-usdt {
+    text-align: right;
+    font-weight: bold;
+    color: #4ade80;
+}
+
+.badge {
+    display: block;
+    font-size: 10px;
+    color: #8888aa;
+    font-weight: normal;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin: 16px 0;
+}
+
+.stat-item {
+    background: #14141f;
+    padding: 12px 8px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #8888aa;
+    margin-top: 4px;
+}
+
+.referral-section {
+    background: #14141f;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 12px 0;
+    border: 1px solid #1f1f35;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.referral-desc {
+    font-size: 13px;
+    color: #8888aa;
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.referral-desc strong {
+    color: #4ade80;
+}
+
+.referral-link-box {
+    display: flex;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.referral-link-box input {
+    flex: 1;
+    padding: 10px 12px;
+    background: #0a0a12;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    color: #8888aa;
+    font-size: 12px;
+    outline: none;
+}
+
+.referral-link-box button {
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.referral-link-box button:active {
+    transform: scale(0.95);
+}
+
+.commission-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #0a0a12;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 10px;
+    border: 1px solid #1f1f35;
+}
+
+.commission-box span:first-child {
+    color: #8888aa;
+    font-size: 13px;
+}
+
+.commission-amount {
+    color: #4ade80;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.history-item {
+    background: #14141f;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 3px solid #667eea;
+}
+
+.history-item .product-name {
+    font-weight: 500;
+    font-size: 14px;
+    color: #fff;
+}
+
+.history-item .product-detail {
+    color: #8888aa;
+    font-size: 12px;
+}
+
+.history-item .product-price {
+    color: #ff6b6b;
+    font-weight: bold;
+}
+
+.history-item .product-date {
+    color: #555;
+    font-size: 11px;
+}
+
+.top-header {
+    text-align: center;
+    margin: 16px 0 20px 0;
+}
+
+.top-header h2 {
+    font-size: 22px;
+    color: #fff;
+}
+
+.top-header p {
+    color: #8888aa;
+    font-size: 14px;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    background: #14141f;
+    border-radius: 10px;
+    padding: 4px;
+}
+
+.filter-tab {
+    flex: 1;
+    padding: 10px 0;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #8888aa;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.filter-tab.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.filter-tab:active {
+    transform: scale(0.95);
+}
+
+.top-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #14141f;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid #1f1f35;
+    margin-bottom: 10px;
+}
+
+.top-1 {
+    border-color: #ffd700;
+    background: linear-gradient(135deg, #1a1a2e, #2a1a3e);
+}
+
+.top-1 .top-rank {
+    font-size: 32px;
+}
+
+.top-2 .top-rank {
+    font-size: 28px;
+}
+
+.top-3 .top-rank {
+    font-size: 28px;
+}
+
+.top-rank {
+    font-size: 24px;
+    min-width: 40px;
+    text-align: center;
+}
+
+.top-info {
+    flex: 1;
+}
+
+.top-name {
+    font-weight: 600;
+    font-size: 16px;
+    color: #fff;
+}
+
+.top-username {
+    color: #8888aa;
+    font-size: 13px;
+}
+
+.top-id {
+    color: #555;
+    font-size: 11px;
+}
+
+.top-amount {
+    color: #ff6b6b;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.recharge-screen h2 {
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.recharge-desc {
+    text-align: center;
+    color: #8888aa;
+    margin-bottom: 20px;
+}
+
+.recharge-amounts {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.recharge-amounts button {
+    padding: 14px;
+    background: #14141f;
+    border: 1px solid #2a2a4a;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.recharge-amounts button:active {
+    transform: scale(0.95);
+    background: #1f1f35;
+}
+
+.recharge-custom {
+    display: flex;
+    gap: 10px;
+}
+
+.recharge-custom input {
+    flex: 1;
+    padding: 12px;
+    background: #14141f;
+    border: 1px solid #2a2a4a;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    outline: none;
+}
+
+.recharge-custom button {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.recharge-custom button:active {
+    transform: scale(0.95);
+}
