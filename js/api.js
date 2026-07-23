@@ -1,0 +1,71 @@
+const API = {
+    // 🔥 QUAN TRỌNG: Sau khi deploy backend, thay URL này
+    baseUrl: 'https://your-backend.onrender.com/api',
+
+    async request(endpoint, method = 'GET', data = null) {
+        const options = {
+            method,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+        
+        if (data) {
+            options.body = JSON.stringify(data);
+        }
+        
+        try {
+            const response = await fetch(`${this.baseUrl}${endpoint}`, options);
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.error || 'Request failed');
+            }
+            
+            return result;
+        } catch (error) {
+            console.error('API Error:', error);
+            throw error;
+        }
+    },
+
+    async auth(initData) {
+        return this.request('/auth', 'POST', { initData });
+    },
+
+    async getProducts() {
+        return this.request('/products');
+    },
+
+    async getProduct(productId) {
+        return this.request(`/product/${productId}`);
+    },
+
+    async getUser(userId) {
+        return this.request(`/user/${userId}`);
+    },
+
+    async recharge(userId, amount) {
+        return this.request('/recharge', 'POST', { userId, amount });
+    },
+
+    async buy(userId, productId, quantity = 1) {
+        return this.request('/buy', 'POST', { userId, productId, quantity });
+    },
+
+    async getOrders(userId) {
+        return this.request(`/orders/${userId}`);
+    },
+
+    async getTop(filter) {
+        return this.request(`/top/${filter}`);
+    },
+
+    async addProduct(adminId, productData) {
+        return this.request('/admin/add-product', 'POST', { adminId, ...productData });
+    },
+
+    async setUserRole(adminId, targetId, role, commissionRate = 30) {
+        return this.request('/admin/set-role', 'POST', { adminId, targetId, role, commission_rate: commissionRate });
+    }
+};
